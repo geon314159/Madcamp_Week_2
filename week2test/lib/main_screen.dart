@@ -5,6 +5,7 @@ import 'main.dart';
 import 'notice_tab.dart';
 import 'schedule_tab.dart';
 import 'todo_tab.dart';
+import 'group_details.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,7 +15,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   String name = '';
   String email = '';
-  List<int> groupIds = [];
+  List<Map<String, dynamic>> groupsInfo = [];
   double backdropOpacity = 0.0;
   double buttonOpacity = 0.0;
 
@@ -41,13 +42,14 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         name = responseData['name'];
         email = responseData['email'];
-        groupIds = List<int>.from(responseData['group_ids']);
+        groupsInfo = List<Map<String, dynamic>>.from(responseData['groups_info']);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load user info')),
       );
     }
+    print(groupsInfo);
   }
 
   Future<void> _createGroup() async {
@@ -109,6 +111,17 @@ class _MainScreenState extends State<MainScreen> {
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
         String inviteCode = responseData['invite_code'];
+
+        // 그룹 생성 후 groupsInfo 업데이트
+        setState(() {
+          groupsInfo.add({
+            'group_id': responseData['group_id'],
+            'group_name': result['group_name'],
+            'description': result['description'],
+            'member_count': 1, // 새로운 그룹의 멤버는 처음에 1명
+          });
+        });
+
         _showInviteCodeDialog(inviteCode);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,6 +177,7 @@ class _MainScreenState extends State<MainScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Successfully joined group')),
         );
+        _fetchUserInfo(); // 그룹 가입 후 정보를 다시 가져옴
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to join group')),
@@ -215,6 +229,15 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  void _navigateToGroupDetails(BuildContext context, int groupId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GroupDetailsScreen(userId: userId!, groupId: groupId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,7 +260,7 @@ class _MainScreenState extends State<MainScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 16, right: 16, top: 70),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 80),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -256,7 +279,7 @@ class _MainScreenState extends State<MainScreen> {
                               children: [
                                 Text(
                                   "$name",
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                                 ),
                                 Text("$email", style: TextStyle(fontSize: 15)),
                               ],
@@ -269,6 +292,7 @@ class _MainScreenState extends State<MainScreen> {
                                 icon: const Icon(Icons.navigate_next_outlined),
                                 onPressed: null,
                                 color: Colors.black,
+                                iconSize: 30,
                               ),
                             ],
                           ),
@@ -311,53 +335,144 @@ class _MainScreenState extends State<MainScreen> {
               builder: (BuildContext context, ScrollController scrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Color(0xfff6f6f6),
+                    color: Color(0xffffffff),
                     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,
-                        blurRadius: 10.0,
-                        spreadRadius: 5.0,
+                        blurRadius: 8.0,
+                        spreadRadius: 10.0,
                       ),
                     ],
                   ),
-                  child: ListView(
+                  child: GridView.builder(
                     controller: scrollController,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Text('Slide Me Up', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 20),
-                            // 추가 컨텐츠
-                            Text('More content here...'),
-                          ],
+                    padding: const EdgeInsets.all(25.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // 2열 그리드
+                      crossAxisSpacing: 25.0,
+                      mainAxisSpacing: 25.0,
+                      childAspectRatio: 1.0, // 정사각형 모양
+                    ),
+                    itemCount: groupsInfo.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GestureDetector(
+                        onTap: () => _navigateToGroupDetails(context, groupsInfo[index]['group_id']),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xfff6f6f6),
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 5.0,
+                                spreadRadius: 3,
+                                offset: Offset(0,7)
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        groupsInfo[index]['group_name'],
+                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xff33beb1)),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.person_2_outlined, color: Colors.grey,size: 15,),
+                                        Text("${groupsInfo[index]['member_count']}",style: TextStyle(fontSize: 13),)
+                                      ],
+                                    )
+                                  ],
+                                ),
+                                //SizedBox(height: 10),
+                                Visibility(
+                                  visible: groupsInfo[index]['leader_id'] == userId,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xccAD85F1), // 슬라이드 컨테이너와 동일한 배경색
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child:
+                                    Padding(
+                                      padding: const EdgeInsets.all(3.0),
+                                      child: Text(
+                                        'Leader',
+                                        style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
+                                      ),
+                                    )
+                                  )
+                                ),
+                                Visibility(
+                                  visible: groupsInfo[index]['leader_id'] != userId,
+                                  child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xccf19985),
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child:
+                                      Padding(
+                                        padding: const EdgeInsets.all(3.0),
+                                        child: Text(
+                                          'Member',
+                                          style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
+                                        ),
+                                      )
+                                  )
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  groupsInfo[index]['description'],
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 );
               },
             ),
           ),
           // 페이드인되면서 올라오는 버튼들
+          // 페이드인되면서 올라오는 버튼들
           Positioned(
-            bottom: 70, // BottomNavigationBar 위로
-            left: MediaQuery.of(context).size.width * 0.2,
+            bottom: 10, // BottomNavigationBar 위로
+            left: 0,
+            right: 0,
             child: AnimatedOpacity(
               opacity: buttonOpacity,
               duration: Duration(milliseconds: 300),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FloatingActionButton(
-                    onPressed: _createGroup,
-                    child: Icon(Icons.add),
+                  Visibility(
+                    visible: buttonOpacity == 1.0,
+                    child: FloatingActionButton(
+                      heroTag: 'creategroup',
+                      onPressed: _createGroup,
+                      child: Icon(Icons.add),
+                    ),
                   ),
-                  SizedBox(width: 20),
-                  FloatingActionButton(
-                    onPressed: _joinGroup,
-                    child: Icon(Icons.add),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.3),
+                  Visibility(
+                    visible: buttonOpacity == 1.0,
+                    child: FloatingActionButton(
+                      heroTag: 'joingroup',
+                      onPressed: _joinGroup,
+                      child: Icon(Icons.add),
+                    ),
                   ),
                 ],
               ),
@@ -367,7 +482,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Color(0xfff6f6f6), // 슬라이드 컨테이너와 동일한 배경색
+          color: Color(0xffffffff), // 슬라이드 컨테이너와 동일한 배경색
           border: Border(
             top: BorderSide(
               color: Colors.transparent, // 투명한 테두리
