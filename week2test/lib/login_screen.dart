@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'main.dart';
 import 'main_screen.dart';
+import 'main.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -14,6 +13,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> _signIn() async {
     final response = await http.post(
@@ -50,31 +50,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return;
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-    final User? user = userCredential.user;
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
 
-    if (user != null) {
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
       final response = await http.post(
         Uri.parse('http://172.10.7.89:80/google_login'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'email': user.email!,
+          'token': googleAuth.idToken!,
         }),
       );
 
       if (response.statusCode == 404) {
-        final String? username = await _showCreateAccountDialog(email: user.email!);
+        final String? username = await _showCreateAccountDialog(email: googleUser.email);
         if (username != null) {
-          await _createUser(user.email!, username);
+          await _createUser(googleUser.email, username);
         }
       } else if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -88,6 +83,10 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(content: Text('An error occurred. Please try again.')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google sign-in failed: $e')),
+      );
     }
   }
 

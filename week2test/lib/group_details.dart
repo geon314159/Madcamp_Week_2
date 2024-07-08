@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final int userId;
@@ -15,13 +17,18 @@ class GroupDetailsScreen extends StatefulWidget {
 }
 
 class Tag {
-  final String name;
-  final Color color;
+  int id;
+  String name;
+  Color color;
 
-  Tag(this.name, this.color);
+  Tag(this.id, this.name, this.color);
 
   static Color intToColor(int hexColor) {
     return Color((0xFF000000 + hexColor).toUnsigned(32));
+  }
+
+  static int colorToInt(Color color) {
+    return (color.value & 0xFFFFFF);
   }
 }
 
@@ -31,10 +38,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   List<Map<String, dynamic>> teamList = [];
   List<int> userTeamIds = [];
   List<Map<String, dynamic>> groupUserList = [];
-  int tagnumber = 3;
   List<Tag> tagList = [];
+  List<Tag> appliedtagList = [];
   int noticenumber = 3;
   int _selectedIndex = 0;
+  Tag? selectedTag;
 
   @override
   void initState() {
@@ -68,9 +76,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           'user_id': user[0],
           'user_name': user[1],
         }));
-        tagList = List<Tag>.from(responseData['tags'].map((tag) => Tag(
-          tag['tag_name'],
-          Tag.intToColor(tag['tag_color']),
+        tagList = List<Tag>.from(responseData['tag_list'].map((tag) => Tag(
+          tag[0],
+          tag[1],
+          Tag.intToColor(tag[2]),
         )));
       });
     } else {
@@ -130,40 +139,165 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     ];
   }
 
-  Widget _generateTags(Color? c, String s) {
-    return Row(
-      children: [
-        Container(
-          height: 30,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            color: c,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 2.0, bottom: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  s,
-                  style: TextStyle(color: Color(0xffF1EAD0)),
-                ),
-                SizedBox(width: 3.0),
-                Container(
-                  width: 13,
-                  child: IconButton(
-                    padding: EdgeInsets.zero, // 패딩 설정
-                    constraints: BoxConstraints(),
-                    onPressed: null,
-                    icon: const Icon(Icons.cancel, size: 15, color: Color(0xffF1EAD0)),
-                  ),
-                )
-              ],
+  Widget _generateTagsForScrollView(Color? c, String s, bool isSelected, Tag tag) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      height: 30,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        color: c,
+        border: isSelected ? Border.all(color: Colors.blue, width: 2.0) : null,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 2.0, bottom: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              s,
+              style: TextStyle(color: Color(0xffF1EAD0)),
             ),
-          ),
+            SizedBox(width: 3.0),
+            Container(
+              width: 13,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+                onPressed: () {
+                  setState(() {
+                    appliedtagList.remove(tag);
+                  });
+                },
+                icon: const Icon(Icons.cancel, size: 15, color: Color(0xffF1EAD0)),
+              ),
+            )
+          ],
         ),
-        SizedBox(width: 5),
-      ],
+      ),
+    );
+  }
+
+  Widget _generateTagsForFilter(Color? c, String s, bool isSelected) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      height: 30,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+        color: c,
+        border: isSelected ? Border.all(color: Colors.blue, width: 2.0) : null,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 2.0, bottom: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              s,
+              style: TextStyle(color: Color(0xffF1EAD0)),
+            ),
+            SizedBox(width: 3.0),
+            Container(
+              width: 13,
+              child: IconButton(
+                padding: EdgeInsets.zero, // 패딩 설정
+                constraints: BoxConstraints(),
+                onPressed: null,
+                icon: const Icon(Icons.cancel, size: 15, color: Color(0xffF1EAD0)),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editTag(Tag tag) {
+    TextEditingController tagNameController = TextEditingController(text: tag.name);
+    Color selectedColor = tag.color;
+
+    Future<void> _updateGroupTags() async {
+      final response = await http.post(
+        Uri.parse('http://172.10.7.89:80/edit_groupTags'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'group_id': widget.groupId,
+          'tags': tagList.map((tag) => {
+            'name': tag.name,
+            'color': Tag.colorToInt(tag.color),
+          }).toList(),
+        }),
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Tags successfully updated')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update tags')),
+        );
+      }
+    }
+
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Tag'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tagNameController,
+                decoration: InputDecoration(labelText: 'Tag Name'),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  Color color = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ColorPickerDialog(currentColor: selectedColor);
+                    },
+                  );
+                  if (color != null) {
+                    setState(() {
+                      selectedColor = color;
+                    });
+                  }
+                },
+                child: Text('Select Color'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Save'),
+              onPressed: () {
+                setState(() {
+                  tag.name = tagNameController.text;
+                  tag.color = selectedColor;
+                });
+                this.setState(() {
+                });
+                _updateGroupTags();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -184,16 +318,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: List.generate(tagnumber, (index) {
-                        return _generateTags(Color(0xccf19985), 'tag');
-                      }),
+                      children: appliedtagList.map((tag) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: _generateTagsForScrollView(tag.color, tag.name, false, tag),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
                 Flexible(
                   child: IconButton(
-                    onPressed: null,
+                    onPressed: _showTagFilter,
                     icon: FaIcon(
                       FontAwesomeIcons.filter,
                       size: 15,
@@ -225,6 +361,79 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     );
   }
 
+  void _showTagFilter() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Filter Tags', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: tagList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        Tag tag = tagList[index];
+                        bool isSelected = tag == selectedTag;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  selectedTag = tag;
+                                });
+                              },
+                              child: _generateTagsForFilter(tag.color, tag.name, isSelected),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () => _editTag(tag),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (selectedTag != null) {
+                          if (appliedtagList.any((tag) => tag.id == selectedTag!.id)) {
+                            Fluttertoast.showToast(
+                              msg: "Tag already applied",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Color(0xfff19985),
+                              textColor: Color(0xfff1ead0),
+                              fontSize: 10.0,
+                            );
+                          } else {
+                            setState(() {
+                              appliedtagList.add(selectedTag!);
+                            });
+                            this.setState(() {});
+                            Navigator.of(context).pop();
+                          }
+                        }
+                      },
+                      child: Text('Apply Tags'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,9 +454,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         overlayOpacity: 0.4,
         spaceBetweenChildren: 0.2,
         children: [
-
           SpeedDialChild(
-            child: Icon(Icons.group_add,size: 24.0,),
+            child: Icon(Icons.group_add, size: 24.0),
             backgroundColor: Color(0xffa0d9d3),
             label: 'Edit Teams',
             labelBackgroundColor: Colors.transparent,
@@ -255,9 +463,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             labelStyle: TextStyle(fontSize: 13.0),
             onTap: _createTeam,
           ),
-
           SpeedDialChild(
-            child: Icon(Icons.comment,size: 24.0,),
+            child: Icon(Icons.comment, size: 24.0),
             backgroundColor: Color(0xffa0d9d3),
             label: 'Create Notice',
             labelBackgroundColor: Colors.transparent,
@@ -265,16 +472,15 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
             labelStyle: TextStyle(fontSize: 13.0),
             onTap: null,
           ),
-          // Add more SpeedDialChild widgets here for additional FAB actions
         ],
       )
           : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Color(0xfff6f6f6), // Scaffold와 동일한 배경색
+          color: Color(0xfff6f6f6),
           border: Border(
             top: BorderSide(
-              color: Colors.transparent, // 투명한 테두리
+              color: Colors.transparent,
               width: 0.5,
             ),
           ),
@@ -283,27 +489,27 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
           type: BottomNavigationBarType.fixed,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.comment), // 아이콘 크기 조정
+              icon: Icon(Icons.comment),
               label: 'Community',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.schedule), // 아이콘 크기 조정
+              icon: Icon(Icons.schedule),
               label: 'Schedule',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.check_box), // 아이콘 크기 조정
+              icon: Icon(Icons.check_box),
               label: 'Todo',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.group), // 아이콘 크기 조정
+              icon: Icon(Icons.group),
               label: 'Teams',
             ),
           ],
           selectedItemColor: Colors.black,
-          backgroundColor: Color(0xfff6f6f6), // 배경색을 Scaffold와 동일하게 설정
+          backgroundColor: Color(0xfff6f6f6),
           unselectedItemColor: Colors.black,
           showUnselectedLabels: true,
-          elevation: 0, // 테두리 없앰
+          elevation: 0,
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
         ),
@@ -408,6 +614,66 @@ class _CreateTeamDialogState extends State<CreateTeamDialog> {
               'user_ids': selectedUserIds,
               'team_leader_id': selectedTeamLeaderId,
             });
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class ColorPickerDialog extends StatefulWidget {
+  final Color currentColor;
+
+  ColorPickerDialog({required this.currentColor});
+
+  @override
+  _ColorPickerDialogState createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<ColorPickerDialog> {
+  Color _selectedColor = Color(0xfff17877);
+
+  final List<Color> _presetColors = [
+    Color(0xfff17877),
+    Color(0xffAD85F1),
+    Color(0xff8596F1),
+    Color(0xffF185ED),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedColor = widget.currentColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Pick a color'),
+      content: SingleChildScrollView(
+        child: BlockPicker(
+          pickerColor: _selectedColor,
+          onColorChanged: (color) {
+            setState(() {
+              _selectedColor = color;
+            });
+            this.setState(() {
+            });
+          },
+          availableColors: _presetColors,
+        ),
+      ),
+      actions: [
+        TextButton(
+          child: Text('Cancel'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+          child: Text('Select'),
+          onPressed: () {
+            Navigator.of(context).pop(_selectedColor);
           },
         ),
       ],
