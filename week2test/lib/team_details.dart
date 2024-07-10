@@ -94,7 +94,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                       ),
                       title: Row(
                         children: [
-                          Text(team['team_name'], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text(team['team_name'], style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),overflow: TextOverflow.ellipsis,),
                           if (leader_id == userId)
                             Padding(
                               padding: const EdgeInsets.only(left: 8.0),

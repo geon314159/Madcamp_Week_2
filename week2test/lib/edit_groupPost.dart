@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:week2test/main.dart';
 import 'group_details.dart'; // Import Tag class from group_details.dart
 import 'models.dart';
 
@@ -40,9 +39,7 @@ class _EditGroupPostScreenState extends State<EditGroupPostScreen> {
 
     late final response;
 
-    if(widget.teamId == -1)
-    {
-      //print("here");
+    if (widget.teamId == -1) {
       response = await http.put(
         Uri.parse('http://172.10.7.130:80/update_group_notice'),
         headers: <String, String>{
@@ -50,16 +47,13 @@ class _EditGroupPostScreenState extends State<EditGroupPostScreen> {
         },
         body: jsonEncode(<String, dynamic>{
           'group_notice_id': widget.post.id,
-          'user_id' : userId,
+          'user_id': widget.userId,
           'title': _titleController.text,
           'content': _contentController.text,
           'tag_ids': selectedTags.map((tag) => tag.id).toList(),
-          //'images' : []
         }),
       );
-    }
-    else
-    {
+    } else {
       response = await http.put(
         Uri.parse('http://172.10.7.130:80/update_team_notice'),
         headers: <String, String>{
@@ -67,11 +61,11 @@ class _EditGroupPostScreenState extends State<EditGroupPostScreen> {
         },
         body: jsonEncode(<String, dynamic>{
           'team_notice_id': widget.post.id,
-          'user_id' : userId,
+          'user_id': widget.userId,
           'title': _titleController.text,
           'content': _contentController.text,
           'tag_ids': selectedTags.map((tag) => tag.id).toList(),
-          'images' : []
+          'images': []
         }),
       );
     }
@@ -103,21 +97,18 @@ class _EditGroupPostScreenState extends State<EditGroupPostScreen> {
   }
 
   Future<void> _deletePost() async {
-
     late final response;
-    if(widget.teamId == -1)
-      {
-        response = await http.delete(
-          Uri.parse('http://172.10.7.130:80/delete_group_notice'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode(<String, dynamic>{
-            'group_notice_id': widget.post.id,
-          }),
-        );
-      }
-    else {
+    if (widget.teamId == -1) {
+      response = await http.delete(
+        Uri.parse('http://172.10.7.130:80/delete_group_notice'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'group_notice_id': widget.post.id,
+        }),
+      );
+    } else {
       response = await http.delete(
         Uri.parse('http://172.10.7.130:80/delete_team_notice'),
         headers: <String, String>{
@@ -231,94 +222,97 @@ class _EditGroupPostScreenState extends State<EditGroupPostScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Title',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: 'Edit title here..',
-                border: OutlineInputBorder(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Title',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Contents',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            TextField(
-              controller: _contentController,
-              decoration: InputDecoration(
-                hintText: 'Edit contents here..',
-                border: OutlineInputBorder(),
+              SizedBox(height: 8),
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  hintText: 'Edit title here..',
+                  border: OutlineInputBorder(),
+                ),
               ),
-              maxLines: 5, // Larger input area for content
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Tags',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 30,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: selectedTags.length,
-                itemBuilder: (context, index) {
-                  Tag tag = selectedTags[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: _generateTagsForFilter(tag.color, tag.name, true, tag),
-                  );
-                },
+              SizedBox(height: 20),
+              Text(
+                'Contents',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Available Tags',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.tagList.length,
-                itemBuilder: (context, index) {
-                  Tag tag = widget.tagList[index];
-                  bool isSelected = selectedTags.contains(tag);
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        if (isSelected) {
-                          selectedTags.remove(tag);
-                        } else {
-                          selectedTags.add(tag);
-                        }
-                      });
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 4.0),
-                      child: _generateTagsForFilter(tag.color, tag.name, isSelected, tag),
-                    ),
-                  );
-                },
+              SizedBox(height: 8),
+              TextField(
+                controller: _contentController,
+                decoration: InputDecoration(
+                  hintText: 'Edit contents here..',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 5, // Larger input area for content
               ),
-            ),
-            _isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: _updatePost,
-              child: Text('Update'),
-            ),
-          ],
+              SizedBox(height: 20),
+              Text(
+                'Tags',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Container(
+                height: 30,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: selectedTags.length,
+                  itemBuilder: (context, index) {
+                    Tag tag = selectedTags[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: _generateTagsForFilter(tag.color, tag.name, true, tag),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Available Tags',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Container(
+                height: 200, // Fixed height for the list of available tags
+                child: ListView.builder(
+                  itemCount: widget.tagList.length,
+                  itemBuilder: (context, index) {
+                    Tag tag = widget.tagList[index];
+                    bool isSelected = selectedTags.contains(tag);
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            selectedTags.remove(tag);
+                          } else {
+                            selectedTags.add(tag);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 4.0),
+                        child: _generateTagsForFilter(tag.color, tag.name, isSelected, tag),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                onPressed: _updatePost,
+                child: Text('Update'),
+              ),
+            ],
+          ),
         ),
       ),
     );

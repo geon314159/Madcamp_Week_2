@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'main_screen.dart';
 import 'main.dart';
 
@@ -37,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       userId = responseData['user_id'];
+      print('userId : $userId');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => MainScreen()),
@@ -50,42 +51,57 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signInWithKakao() async {
     try {
-      bool isInstalled = await isKakaoTalkInstalled();
-      OAuthToken token;
+      OAuthToken token = await UserApi.instance.loginWithKakaoAccount();
+      User user = await UserApi.instance.me();
 
-      if (isInstalled) {
-        token = await UserApi.instance.loginWithKakaoTalk();
-      } else {
-        token = await UserApi.instance.loginWithKakaoAccount();
+      List<String> scopes = [];
+      if (user.kakaoAccount?.emailNeedsAgreement == true) {
+        scopes.add('account_email');
+      }
+      if (user.kakaoAccount?.birthdayNeedsAgreement == true) {
+        scopes.add("birthday");
+      }
+      if (user.kakaoAccount?.birthyearNeedsAgreement == true) {
+        scopes.add("birthyear");
+      }
+      if (user.kakaoAccount?.ciNeedsAgreement == true) {
+        scopes.add("account_ci");
+      }
+      if (user.kakaoAccount?.phoneNumberNeedsAgreement == true) {
+        scopes.add("phone_number");
+      }
+      if (user.kakaoAccount?.profileNeedsAgreement == true) {
+        scopes.add("profile");
+      }
+      if (user.kakaoAccount?.ageRangeNeedsAgreement == true) {
+        scopes.add("age_range");
       }
 
-      final response = await http.post(
-        Uri.parse('http://172.10.7.130:80/kakao_login'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'token': token.accessToken,
-        }),
-      );
-
-      if (response.statusCode == 404) {
-        final String? username = await _showCreateAccountDialog(email: token.idToken);
-        if (username != null) {
-          await _createUser(token.idToken!, username);
+      if (scopes.isEmpty) {
+        print('사용자에게 추가 동의를 받아야 하는 항목이 있습니다');
+        try {
+          token = await UserApi.instance.loginWithNewScopes(scopes);
+          print('현재 사용자가 동의한 동의 항목: ${token.scopes}');
+        } catch (error) {
+          print('추가 동의 요청 실패 $error');
+          return;
         }
-      } else if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        userId = responseData['user_id'];
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again.')),
-        );
+
+        // 사용자 정보 재요청
+        try {
+          user = await UserApi.instance.me();
+          print('사용자 정보 요청 성공'
+              '\n회원번호: ${user.id}'
+              '\n닉네임: ${user.kakaoAccount?.profile?.nickname}'
+              '\n이메일: ${user.kakaoAccount?.email}');
+        } catch (error) {
+          print('사용자 정보 요청 실패 $error');
+          return;
+        }
       }
+
+      final String userId_kakao = '$user.id';
+      await _checkUserAndProceed(userId_kakao);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Kakao sign-in failed: $e')),
@@ -93,14 +109,45 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _createUser(String email, String username, [String? password]) async {
+  Future<void> _checkUserAndProceed(String userId_kakao) async {
+    final response = await http.post(
+      Uri.parse('http://172.10.7.130:80/google_login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': userId_kakao,
+      }),
+    );
+
+    if (response.statusCode == 404) {
+      // User does not exist, prompt to create a new account
+      final String? username = await _showCreateAccountDialog(email: userId_kakao);
+      if (username != null) {
+        await _createUser(userId_kakao, username);
+      }
+    } else if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      userId = responseData['user_id'];
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred. Please try again.')),
+      );
+    }
+  }
+
+  Future<void> _createUser(String userId_kakao, String username, [String? password]) async {
     final response = await http.post(
       Uri.parse('http://172.10.7.130:80/create_user'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'email': email,
+        'email': userId_kakao, // 회원번호를 이메일 필드에 전송
         'username': username,
         'password': password ?? _passwordController.text,
       }),
@@ -139,11 +186,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(labelText: 'Email'),
-                  enabled: email == null,
-                ),
                 TextField(
                   controller: usernameController,
                   decoration: InputDecoration(labelText: 'Username'),
