@@ -1,6 +1,9 @@
+
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/ff1892dc-83a1-496b-9349-be9f859e0b13" alt="Login" width="200">
+</div>
+
 # GMS(Group Management System)를 소개합니다
-
-
 
 여러 카톡방에 흩어져 있는 공지가 찾기 힘드시다구요?
 
@@ -37,9 +40,9 @@
 - 처음 들어가면 상단에 로고가 있는 로그인 화면이 나타납니다.
 - 기존 사용자라면 이메일과 비밀번호를 입력하여 들어갈 수 있고, 새로운 사용자는 기본 회원 가입을 사용하거나 카카오 계정을 활용하여 계정을 만들 수 있습니다.
 
-![Login](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/291915d1-57b6-4a09-94c3-ed7992c391f6/Untitled.png)
-![Login](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/0dd54a4e-bbe0-45ce-92cd-57975d0a6efb/Untitled.png)
-![Login](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/d7913530-96df-4a4a-8e77-399310aae923/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/978663ef-a74a-49a0-9608-9509f127ce3e" alt="Login" width="500">
+</div>
 
 <br>
 <br>
@@ -51,9 +54,9 @@
 - 하단의 화면을 끌어올리면 그룹을 만들거나 참여할 수 있는 버튼이 나타납니다. 그룹을 처음 만들면 만든 사람에게 초대 코드가 주어지고, 해당 초대 코드를 다른 사람이 입력하면 그룹에 참여할 수 있습니다.
 - 프로필을 누르면 상세 프로필 페이지로 이동하며, 유저의 이메일과 프로필 사진, 시간표 정보를 확인할 수 있으며, 각각 수정 또한 가능합니다.
 
-![Main Screen](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/b2f6998c-bcf4-4c4f-866b-a1c543761a81/Untitled.png)
-![Main Screen](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/e1ab5355-7da3-4949-a2e0-4c1c784cb829/Untitled.png)
-![Main Screen](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/40bc366b-c984-464c-b7e8-36bde5f41bc2/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/dee8ccd0-3f62-4a30-992a-30eb88c2c91e" alt="Login" width="500">
+</div>
 
 <br>
 <br>
@@ -69,9 +72,9 @@
 - 미팅을 만들기를 시작하면, 먼저 필요한 시간 정보와 참여할 유저들의 목록을 받습니다. 이후 해당 유저들의 시간표 정보를 수합하여, 전체 인원이 가능한 시간 목록을 확인하여 미팅 시간을 확정할 수 있습니다.
 - 미팅이 생성되면, 해당 정보를 기반으로 공지글이 작성됩니다.
 
-![Group Main](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/433a1afa-a81a-4d08-80ef-3f38d00586e3/Untitled.png)
-![Group Main](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/224929c7-e768-4deb-a15a-60c7ea6b3573/Untitled.png)
-![Group Main](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/1aa447c1-18ce-4125-83f2-7059775b738d/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/15b4b81b-1c44-4208-bba2-660d179c3b44" alt="Login" width="500">
+</div>
 
 <br>
 <br>
@@ -82,18 +85,21 @@
 - 게시글의 경우 태그를 통한 필터링으로, 원하는 태그의 게시글을 확인할 수 있습니다.
 - 태그의 수정이 가능하며, 이름과 색상을 선택하여 원하는 태그를 새롭게 커스터마이즈 할 수 있습니다.
 
-![Tag](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/1a8b1d5f-03b3-4400-b71c-4fb4e74ed8cb/Untitled.png)
-![Tag](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/5912223e-96e1-4cf1-be06-120549412579/Untitled.png)
-![Tag](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/9e650a0e-12da-4697-8de0-85223a598811/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/7a6450e6-fc23-49e6-8647-bdb12a5e7ca6" alt="Login" width="500">
+</div>
+
+<br>
+<br>
 
 #### 3) Schedule
 
 - 하단의 스케줄 네비게이션 바로 들어가면 캘린더가 나타납니다.
 - 해당 그룹에서 생성된 미팅들을 확인할 수 있으며, 수정도 가능합니다.
 
-![Schedule](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/30bb9ae4-6292-4191-8348-80fff3afd09a/Untitled.png)
-![Schedule](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/5e9028e2-fc97-4446-a442-f6093416ef4d/Untitled.png)
-![Schedule](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/e7ec96e9-95ed-4d3c-8d84-58027e0a45dc/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/8a10fecd-ec06-4cba-9092-81d7ca4039bc" alt="Login" width="500">
+</div>
 
 <br>
 <br>
@@ -107,9 +113,9 @@
 - 팀을 누르면 팀 상세 페이지로 이동하며, 기능은 그룹 페이지와 동일합니다.
 - 이때 태그는 팀이 소속된 그룹의 태그를 그대로 사용할 수 있습니다.
 
-![Team Page](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/862f6121-f85e-4bb6-8261-7a295814303a/Untitled.png)
-![Team Page](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/1fa0388e-9108-4f3a-8e96-c347e7659729/Untitled.png)
-![Team Page](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/2448f184-eab4-48d4-a252-d6af9254a99f/Untitled.png)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/1d24ab16-1059-4d42-8274-390a951eec7d" alt="Login" width="500">
+</div>
 
 <br>
 <br>
@@ -120,9 +126,11 @@
 
 - 전반적인 디자인은 아래 diagram 참고 부탁드립니다.
 
-![DB Design](https://prod-files-secure.s3.us-west-2.amazonaws.com/f6cb388f-3934-47d6-9928-26d2e10eb0fc/215c3d9b-fc79-42a4-bf3d-96723b7cfd71/DB.png)
+[DB Design Link](https://dbdiagram.io/d/668d07c79939893dae6ee38a)
 
-[A Free Database Designer for Developers and Analysts](https://dbdiagram.io/d/668d07c79939893dae6ee38a)
+<div align="center">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/16b8914d-03fd-43f6-b29d-877e338ae0ca" alt="Login" width="500">
+</div>
 
 <br>
 <br>
