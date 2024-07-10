@@ -10,17 +10,19 @@
 일정을 정해야 하는데 when2meet을 기록하지 않는 팀원이 있어 일정을 정할 수 없다구요?
 
 당신의 현명한 단체생활을 위한 단체 관리 어플이 여기 있습니다!
+
+<br>
 <br>
 
 ## Team
 
+- [강건](https://www.notion.so/a9f5fe76226a458b976db96edcffcf20?pvs=21) - Backend
+  - [geon314159 - Overview](https://github.com/geon314159)
 
 - [조영서](https://www.notion.so/9c9e5bc511ff4fb2bd9f317a13ce13a0?pvs=21) - Frontend
   - [cyshello - Overview](https://github.com/cyshello)
 
-- [강건](https://www.notion.so/a9f5fe76226a458b976db96edcffcf20?pvs=21) - Backend
-  - [geon314159 - Overview](https://github.com/geon314159)
-
+<br>
 <br>
 
 ## Tech Stack
@@ -29,6 +31,7 @@
 
 - **Frontend**: Flutter
 - **Backend**: Flask + MySQL
+<br>
 <br>
 
 
