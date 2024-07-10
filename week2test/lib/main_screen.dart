@@ -6,6 +6,7 @@ import 'notice_tab.dart';
 import 'schedule_tab.dart';
 import 'todo_tab.dart';
 import 'group_details.dart';
+import 'user_profile.dart'; // 추가
 
 class MainScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   String name = '';
   String email = '';
+  String user_profile = '';
   List<Map<String, dynamic>> groupsInfo = [];
   double backdropOpacity = 0.0;
   double buttonOpacity = 0.0;
@@ -27,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _fetchUserInfo() async {
     final response = await http.post(
-      Uri.parse('http://172.10.7.89:80/user_info'),
+      Uri.parse('http://172.10.7.130:80/user_info'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -42,6 +44,7 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         name = responseData['name'];
         email = responseData['email'];
+        user_profile = responseData['profile_image'];
         groupsInfo = List<Map<String, dynamic>>.from(responseData['groups_info']);
       });
     } else {
@@ -97,7 +100,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (result != null) {
       final response = await http.post(
-        Uri.parse('http://172.10.7.89:80/create_group'),
+        Uri.parse('http://172.10.7.130:80/create_group'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -107,6 +110,7 @@ class _MainScreenState extends State<MainScreen> {
           'description': result['description'],
         }),
       );
+      print(response.body);
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
@@ -163,7 +167,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (result != null) {
       final response = await http.post(
-        Uri.parse('http://172.10.7.89:80/join_group'),
+        Uri.parse('http://172.10.7.130:80/join_group'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -238,6 +242,15 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  bool _isVisible = true;
+  bool _isOpaque = true;
+
+  String getProfileImageUrl(String filePath) {
+    // filePath가 /root/Madcamp_Week_2/uploads/photos/test.png 형식일 때, 서버 URL로 변환
+    return 'http://172.10.7.130:80/uploads' + filePath;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,42 +275,40 @@ class _MainScreenState extends State<MainScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, top: 80),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start, // 변경: center에서 start로
                   children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: NetworkImage(getProfileImageUrl(user_profile)),
+                    ),
+                    SizedBox(width: 10),
                     Container(
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      color: Colors.transparent,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                      width: MediaQuery.of(context).size.width * 0.55,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.person, size: 80),
-                          SizedBox(width: 10),
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.55,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "$name",
-                                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                                ),
-                                Text("$email", style: TextStyle(fontSize: 15)),
-                              ],
-                            ),
+                          Text(
+                            "$name",
+                            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.navigate_next_outlined),
-                                onPressed: null,
-                                color: Colors.black,
-                                iconSize: 30,
-                              ),
-                            ],
-                          ),
+                          Text("$email", style: TextStyle(fontSize: 15)),
                         ],
                       ),
+                    ),
+                    //Spacer(), // 변경: 오른쪽으로 밀어주기 위해 Spacer 추가
+                    IconButton(
+                      icon: const Icon(Icons.navigate_next_outlined),
+                      onPressed: () {
+                        print('pushed');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserProfileScreen(userId: userId!), // UserProfile 화면으로 이동
+                          ),
+                        );
+                      },
+                      color: Colors.black,
+                      iconSize: 30,
                     ),
                   ],
                 ),
@@ -308,16 +319,17 @@ class _MainScreenState extends State<MainScreen> {
           AnimatedOpacity(
             opacity: backdropOpacity,
             duration: Duration(milliseconds: 300),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  backdropOpacity = 0.0;
+            onEnd: (){
+                setState((){
+                  //_isVisible = false;
                 });
-              },
+            },
+            child: Visibility(
               child: Container(
                 color: Colors.black.withOpacity(0.5),
               ),
-            ),
+              visible: _isVisible,
+            )
           ),
           // 슬라이드 가능한 컨테이너
           NotificationListener<DraggableScrollableNotification>(
@@ -325,6 +337,8 @@ class _MainScreenState extends State<MainScreen> {
               setState(() {
                 backdropOpacity = notification.extent > 0.85 ? 1.0 : 0.0;
                 buttonOpacity = notification.extent > 0.85 ? 1.0 : 0.0;
+                if(notification.extent > 0.75) _isVisible = true;
+                if(notification.extent == 0.75) _isVisible = false;
               });
               return true;
             },
@@ -364,10 +378,10 @@ class _MainScreenState extends State<MainScreen> {
                             borderRadius: BorderRadius.circular(15),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 5.0,
-                                spreadRadius: 3,
-                                offset: Offset(0,7)
+                                  color: Colors.black12,
+                                  blurRadius: 5.0,
+                                  spreadRadius: 3,
+                                  offset: Offset(0,7)
                               ),
                             ],
                           ),
@@ -396,38 +410,38 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 //SizedBox(height: 10),
                                 Visibility(
-                                  visible: groupsInfo[index]['leader_id'] == userId,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Color(0xccAD85F1), // 슬라이드 컨테이너와 동일한 배경색
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child:
-                                    Padding(
-                                      padding: const EdgeInsets.all(3.0),
-                                      child: Text(
-                                        'Leader',
-                                        style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
-                                      ),
+                                    visible: groupsInfo[index]['leader_id'] == userId,
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xccAD85F1), // 슬라이드 컨테이너와 동일한 배경색
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child:
+                                        Padding(
+                                          padding: const EdgeInsets.all(3.0),
+                                          child: Text(
+                                            'Leader',
+                                            style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
+                                          ),
+                                        )
                                     )
-                                  )
                                 ),
                                 Visibility(
-                                  visible: groupsInfo[index]['leader_id'] != userId,
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Color(0xccf19985),
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child:
-                                      Padding(
-                                        padding: const EdgeInsets.all(3.0),
-                                        child: Text(
-                                          'Member',
-                                          style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
+                                    visible: groupsInfo[index]['leader_id'] != userId,
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xccf19985),
+                                          borderRadius: BorderRadius.circular(5),
                                         ),
-                                      )
-                                  )
+                                        child:
+                                        Padding(
+                                          padding: const EdgeInsets.all(3.0),
+                                          child: Text(
+                                            'Member',
+                                            style: TextStyle(fontSize:8, fontWeight: FontWeight.bold, color: Color(0xfff1ead0)),
+                                          ),
+                                        )
+                                    )
                                 ),
                                 SizedBox(height: 10),
                                 Text(
@@ -459,19 +473,49 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   Visibility(
                     visible: buttonOpacity == 1.0,
-                    child: FloatingActionButton(
-                      heroTag: 'creategroup',
-                      onPressed: _createGroup,
-                      child: Icon(Icons.add),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Create',
+                          style: TextStyle(
+                            color: Color(0xff4B4A4A),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        FloatingActionButton(
+                          heroTag: 'creategroup',
+                          onPressed: _createGroup,
+                          child: Icon(Icons.add),
+                          backgroundColor: Color(0xffD0EAEF),
+                          foregroundColor: Color(0xff4B4A4A),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(width: MediaQuery.of(context).size.width * 0.3),
                   Visibility(
                     visible: buttonOpacity == 1.0,
-                    child: FloatingActionButton(
-                      heroTag: 'joingroup',
-                      onPressed: _joinGroup,
-                      child: Icon(Icons.add),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Join',
+                          style: TextStyle(
+                            color: Color(0xff4B4A4A),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        FloatingActionButton(
+                          heroTag: 'joingroup',
+                          onPressed: _joinGroup,
+                          child: Icon(Icons.add),
+                          backgroundColor: Color(0xffD0EAEF),
+                          foregroundColor: Color(0xff4B4A4A),
+                        ),
+                      ],
                     ),
                   ),
                 ],

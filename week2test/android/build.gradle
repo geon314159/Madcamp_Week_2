@@ -3,12 +3,12 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' } // Kakao SDK repository 추가
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.13' // 추가된 부분
     }
 }
 
@@ -16,9 +16,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url 'https://devrepo.kakao.com/nexus/content/groups/public/' } // Kakao SDK repository 추가
     }
 }
-
 
 rootProject.buildDir = "../build"
 subprojects {
