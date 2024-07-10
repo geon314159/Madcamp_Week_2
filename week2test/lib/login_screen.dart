@@ -241,13 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(height: screenHeight * 0.0),
-              Text(
-                'LOGO',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Image.asset('assets/logo.png'),
               SizedBox(height: screenHeight * 0.05),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
