@@ -1,5 +1,4 @@
 import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -597,10 +596,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                               },
                               child: _generateTagsForFilter(tag.color, tag.name, isSelected),
                             ),
-                            IconButton(
-                              icon: Icon(Icons.more_horiz),
-                              onPressed: () => _editTag(tag),
-                            ),
+                            if (leaderId == widget.userId)
+                              IconButton(
+                                icon: Icon(Icons.more_horiz),
+                                onPressed: () => _editTag(tag),
+                              ),
                           ],
                         );
                       },
@@ -639,6 +639,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
                       child: Text('Apply Tags', style: TextStyle(color: Color(0xfff1ead0))),
                     ),
                   ),
+                  if (leaderId == widget.userId)
+                    SizedBox(height: 10),
+                  if (leaderId == widget.userId)
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xff33beb1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _showAddTagDialog();
+                        },
+                        child: Text('Add Tag', style: TextStyle(color: Color(0xfff1ead0))),
+                      ),
+                    ),
                 ],
               ),
             );
@@ -646,6 +664,88 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
         );
       },
     );
+  }
+
+  void _showAddTagDialog() {
+    TextEditingController tagNameController = TextEditingController();
+    Color selectedColor = Colors.blue; // Default color
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add Tag'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tagNameController,
+                decoration: InputDecoration(labelText: 'Tag Name'),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  Color color = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ColorPickerDialog(currentColor: selectedColor);
+                    },
+                  );
+                  if (color != null) {
+                    setState(() {
+                      selectedColor = color;
+                    });
+                  }
+                },
+                child: Text('Select Color'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Add'),
+              onPressed: () {
+                _createTag(tagNameController.text, selectedColor);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _createTag(String tagName, Color color) async {
+    final response = await http.post(
+      Uri.parse('http://172.10.7.130:80/create_tag'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'user_group_id': widget.groupId,
+        'tag_name': tagName,
+        'color_hex': color.value.toRadixString(16),
+      }),
+    );
+
+    print(response.body);
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tag successfully created')),
+      );
+      _fetchGroupDetails(); // Refresh tags after creation
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create tag')),
+      );
+    }
   }
 
   void _applyTagFilter() {
