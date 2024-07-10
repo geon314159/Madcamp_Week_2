@@ -44,7 +44,7 @@
 - 기존 사용자라면 이메일과 비밀번호를 입력하여 들어갈 수 있고, 새로운 사용자는 기본 회원 가입을 사용하거나 카카오 계정을 활용하여 계정을 만들 수 있습니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/978663ef-a74a-49a0-9608-9509f127ce3e" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/978663ef-a74a-49a0-9608-9509f127ce3e" alt="Login" width="800">
 </div>
 
 <br>
@@ -58,7 +58,7 @@
 - 프로필을 누르면 상세 프로필 페이지로 이동하며, 유저의 이메일과 프로필 사진, 시간표 정보를 확인할 수 있으며, 각각 수정 또한 가능합니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/dee8ccd0-3f62-4a30-992a-30eb88c2c91e" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/dee8ccd0-3f62-4a30-992a-30eb88c2c91e" alt="Login" width="800">
 </div>
 
 <br>
@@ -76,7 +76,7 @@
 - 미팅이 생성되면, 해당 정보를 기반으로 공지글이 작성됩니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/15b4b81b-1c44-4208-bba2-660d179c3b44" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/15b4b81b-1c44-4208-bba2-660d179c3b44" alt="Login" width="800">
 </div>
 
 <br>
@@ -89,7 +89,7 @@
 - 태그의 수정이 가능하며, 이름과 색상을 선택하여 원하는 태그를 새롭게 커스터마이즈 할 수 있습니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/7a6450e6-fc23-49e6-8647-bdb12a5e7ca6" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/7a6450e6-fc23-49e6-8647-bdb12a5e7ca6" alt="Login" width="800">
 </div>
 
 <br>
@@ -101,7 +101,7 @@
 - 해당 그룹에서 생성된 미팅들을 확인할 수 있으며, 수정도 가능합니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/8a10fecd-ec06-4cba-9092-81d7ca4039bc" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/8a10fecd-ec06-4cba-9092-81d7ca4039bc" alt="Login" width="800">
 </div>
 
 <br>
@@ -117,7 +117,7 @@
 - 이때 태그는 팀이 소속된 그룹의 태그를 그대로 사용할 수 있습니다.
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/1d24ab16-1059-4d42-8274-390a951eec7d" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/1d24ab16-1059-4d42-8274-390a951eec7d" alt="Login" width="800">
 </div>
 
 <br>
@@ -132,7 +132,7 @@
 [DB Design Link](https://dbdiagram.io/d/668d07c79939893dae6ee38a)
 
 <div align="center">
-  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/16b8914d-03fd-43f6-b29d-877e338ae0ca" alt="Login" width="500">
+  <img src="https://github.com/geon314159/Madcamp_Week_2/assets/69643543/16b8914d-03fd-43f6-b29d-877e338ae0ca" alt="Login" width="800">
 </div>
 
 <br>
