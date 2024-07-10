@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'main_screen.dart';
 import 'main.dart';
 
@@ -13,11 +13,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> _signIn() async {
     final response = await http.post(
-      Uri.parse('http://172.10.7.89:80/login_try'),
+      Uri.parse('http://172.10.7.130:80/login_try'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -49,27 +48,31 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithGoogle() async {
+  Future<void> _signInWithKakao() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return;
+      bool isInstalled = await isKakaoTalkInstalled();
+      OAuthToken token;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      if (isInstalled) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
 
       final response = await http.post(
-        Uri.parse('http://172.10.7.89:80/google_login'),
+        Uri.parse('http://172.10.7.130:80/kakao_login'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode(<String, String>{
-          'token': googleAuth.idToken!,
+          'token': token.accessToken,
         }),
       );
 
       if (response.statusCode == 404) {
-        final String? username = await _showCreateAccountDialog(email: googleUser.email);
+        final String? username = await _showCreateAccountDialog(email: token.idToken);
         if (username != null) {
-          await _createUser(googleUser.email, username);
+          await _createUser(token.idToken!, username);
         }
       } else if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -85,14 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google sign-in failed: $e')),
+        SnackBar(content: Text('Kakao sign-in failed: $e')),
       );
     }
   }
 
   Future<void> _createUser(String email, String username, [String? password]) async {
     final response = await http.post(
-      Uri.parse('http://172.10.7.89:80/create_user'),
+      Uri.parse('http://172.10.7.130:80/create_user'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -245,8 +248,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: screenHeight * 0.1),
               ElevatedButton(
-                onPressed: _signInWithGoogle,
-                child: Text('Log in with Google'),
+                onPressed: _signInWithKakao,
+                child: Text('Log in with Kakao'),
               ),
             ],
           ),
